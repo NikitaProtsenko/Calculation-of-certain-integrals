@@ -2,7 +2,7 @@ from math import *
 import pygame 
 pygame.init() # запустить pygame
 screen = pygame.display.set_mode((500,500)) # создать окно 500x500
-pygame.display.set_caption("func_graph") # название окна
+pygame.display.set_caption("Calculate integrals") # название окна
 all_sprites=pygame.sprite.Group() # группа спрайтов  
 clock = pygame.time.Clock() 
 running = True
