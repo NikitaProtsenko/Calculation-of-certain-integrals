@@ -72,9 +72,9 @@ def Image(img):
             img = game.image.load(img).convert()
     return img
 
-def Rect(width, height):
+def Rect(x:float,y:float,width, height):
     """Возвращает прямоугольник для спрайта."""
-    return gameRect(0, 0, width, height)
+    return gameRect(x, y, width, height)
 
 def AllUpdate(screen, sprites, backColor, draw = True):
     """Обновляет кадр."""
