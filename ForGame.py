@@ -49,7 +49,7 @@ class Sprite(game.sprite.Sprite):
         del self
 
 def newScreen(width, height, name = None, img = None):
-    """Возвращает игровое коно."""
+    """Возвращает игровое окно."""
     screen = game.display.set_mode((width, height))
     if name != None:
         game.display.set_caption(name)
