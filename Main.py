@@ -1,65 +1,64 @@
 from math import *
-import pygame 
-pygame.init() # запустить pygame
-screen = pygame.display.set_mode((500,500)) # создать окно 500x500
-pygame.display.set_caption("func_graph") # название окна
-all_sprites=pygame.sprite.Group() # группа спрайтов  
-clock = pygame.time.Clock() 
+import pygame
+from ForGame import *
+
+screen = NewScreen(WIDTH, HEIGHT, 'Integral calculation')
 running = True
 fps=60
+
 class Line(pygame.sprite.Sprite):
     def __init__(self,pos,x,y):
         pygame.sprite.Sprite.__init__(self)
-        if pos=="x": # ось абсцисс
-            self.image=pygame.Surface((3,400)) # линия 3x400
-            self.image.fill((0,0,0)) # закрасить черным цветом
+        if pos=="x": # Г®Г±Гј Г ГЎГ±Г¶ГЁГ±Г±
+            self.image=pygame.Surface((3,400)) # Г«ГЁГ­ГЁГї 3x400
+            self.image.fill((0,0,0)) # Г§Г ГЄГ°Г Г±ГЁГІГј Г·ГҐГ°Г­Г»Г¬ Г¶ГўГҐГІГ®Г¬
             self.rect = self.image.get_rect()
-            self.rect.centerx = x # центр по x
-            self.rect.centery = y # центр по y
-        elif pos=="y": # ось ординат 
-            self.image=pygame.Surface((400,3)) # линия 3x400
-            self.image.fill((0,0,0)) # закрасить черным цветом
+            self.rect.centerx = x # Г¶ГҐГ­ГІГ° ГЇГ® x
+            self.rect.centery = y # Г¶ГҐГ­ГІГ° ГЇГ® y
+        elif pos=="y": # Г®Г±Гј Г®Г°Г¤ГЁГ­Г ГІ 
+            self.image=pygame.Surface((400,3)) # Г«ГЁГ­ГЁГї 3x400
+            self.image.fill((0,0,0)) # Г§Г ГЄГ°Г Г±ГЁГІГј Г·ГҐГ°Г­Г»Г¬ Г¶ГўГҐГІГ®Г¬
             self.rect = self.image.get_rect()
-            self.rect.centerx = x # центр по x
-            self.rect.centery = y # центр по y
+            self.rect.centerx = x # Г¶ГҐГ­ГІГ° ГЇГ® x
+            self.rect.centery = y # Г¶ГҐГ­ГІГ° ГЇГ® y
 class Dot(pygame.sprite.Sprite):
     def __init__(self,x,y):
         pygame.sprite.Sprite.__init__(self)
-        self.image=pygame.surface.Surface((5,5)) # точка 5x5
-        self.image.fill((0,0,0)) # закрасить черным цветом
+        self.image=pygame.surface.Surface((5,5)) # ГІГ®Г·ГЄГ  5x5
+        self.image.fill((0,0,0)) # Г§Г ГЄГ°Г Г±ГЁГІГј Г·ГҐГ°Г­Г»Г¬ Г¶ГўГҐГІГ®Г¬
         self.rect=self.image.get_rect()
-        self.rect.centerx=x # центр по x
-        self.rect.centery=y # центр по y
+        self.rect.centerx=x # Г¶ГҐГ­ГІГ° ГЇГ® x
+        self.rect.centery=y # Г¶ГҐГ­ГІГ° ГЇГ® y
 def Calc(func):
-    i=-10 # начальное значение аргумента
-    while i<=10: # пока аргумент меньше 10
-        mass="" # темп-строка
-        for j in func: # для каждого символа в строке func(наша функция)
-            if j == "x": # если символ = x, то добавляем i в темп-строку
+    i=-10 # Г­Г Г·Г Г«ГјГ­Г®ГҐ Г§Г­Г Г·ГҐГ­ГЁГҐ Г Г°ГЈГіГ¬ГҐГ­ГІГ 
+    while i<=10: # ГЇГ®ГЄГ  Г Г°ГЈГіГ¬ГҐГ­ГІ Г¬ГҐГ­ГјГёГҐ 10
+        mass="" # ГІГҐГ¬ГЇ-Г±ГІГ°Г®ГЄГ 
+        for j in func: # Г¤Г«Гї ГЄГ Г¦Г¤Г®ГЈГ® Г±ГЁГ¬ГўГ®Г«Г  Гў Г±ГІГ°Г®ГЄГҐ func(Г­Г ГёГ  ГґГіГ­ГЄГ¶ГЁГї)
+            if j == "x": # ГҐГ±Г«ГЁ Г±ГЁГ¬ГўГ®Г« = x, ГІГ® Г¤Г®ГЎГ ГўГ«ГїГҐГ¬ i Гў ГІГҐГ¬ГЇ-Г±ГІГ°Г®ГЄГі
                 mass+=str(i)
-            else: # если нет, то добавить исходный символ
+            else: # ГҐГ±Г«ГЁ Г­ГҐГІ, ГІГ® Г¤Г®ГЎГ ГўГЁГІГј ГЁГ±ГµГ®Г¤Г­Г»Г© Г±ГЁГ¬ГўГ®Г«
                 mass+=j
-            i+=0.0001 # увеличить аргумент на 0.0001
+            i+=0.0001 # ГіГўГҐГ«ГЁГ·ГЁГІГј Г Г°ГЈГіГ¬ГҐГ­ГІ Г­Г  0.0001
         try:
-          res1=eval(mass) # посчитать функцию и получить результат
+          res1=eval(mass) # ГЇГ®Г±Г·ГЁГІГ ГІГј ГґГіГ­ГЄГ¶ГЁГѕ ГЁ ГЇГ®Г«ГіГ·ГЁГІГј Г°ГҐГ§ГіГ«ГјГІГ ГІ
         except:
-          res1=10000 # если функцию нельзя посчитать, то результат число вне координат(знаю, костыль)
-        dot=Dot(250+i*10,250-res1*10) # dot - точка с координатой(0+x,0+y), так как это дисплей, то вектор "y" направлен вниз
-        all_sprites.add(dot) # добавить точку в группу спрайтов
-func = str(input("y = ")) # ввод данных 
-calc = Calc(func) # вызвать функцию Calc от func
+          res1=10000 # ГҐГ±Г«ГЁ ГґГіГ­ГЄГ¶ГЁГѕ Г­ГҐГ«ГјГ§Гї ГЇГ®Г±Г·ГЁГІГ ГІГј, ГІГ® Г°ГҐГ§ГіГ«ГјГІГ ГІ Г·ГЁГ±Г«Г® ГўГ­ГҐ ГЄГ®Г®Г°Г¤ГЁГ­Г ГІ(Г§Г­Г Гѕ, ГЄГ®Г±ГІГ»Г«Гј)
+        dot=Dot(250+i*10,250-res1*10) # dot - ГІГ®Г·ГЄГ  Г± ГЄГ®Г®Г°Г¤ГЁГ­Г ГІГ®Г©(0+x,0+y), ГІГ ГЄ ГЄГ ГЄ ГЅГІГ® Г¤ГЁГ±ГЇГ«ГҐГ©, ГІГ® ГўГҐГЄГІГ®Г° "y" Г­Г ГЇГ°Г ГўГ«ГҐГ­ ГўГ­ГЁГ§
+        all_sprites.add(dot) # Г¤Г®ГЎГ ГўГЁГІГј ГІГ®Г·ГЄГі Гў ГЈГ°ГіГЇГЇГі Г±ГЇГ°Г Г©ГІГ®Гў
+func = str(input("y = ")) # ГўГўГ®Г¤ Г¤Г Г­Г­Г»Гµ 
+calc = Calc(func) # ГўГ»Г§ГўГ ГІГј ГґГіГ­ГЄГ¶ГЁГѕ Calc Г®ГІ func
 
-line = Line("y",250,250) # добавить ось ординат
+line = Line("y",250,250) # Г¤Г®ГЎГ ГўГЁГІГј Г®Г±Гј Г®Г°Г¤ГЁГ­Г ГІ
 all_sprites.add(line)
-line1 = Line("x",250,250) # добавить ось абсцисс
+line1 = Line("x",250,250) # Г¤Г®ГЎГ ГўГЁГІГј Г®Г±Гј Г ГЎГ±Г¶ГЁГ±Г±
 all_sprites.add(line1)
 
-while running: # основной цикл
+while running: # Г®Г±Г­Г®ГўГ­Г®Г© Г¶ГЁГЄГ«
     clock.tick(fps)
     for event in pygame.event.get():
-        if event.type == pygame.QUIT: # если закрыл окно - завершить программу
+        if event.type == pygame.QUIT: # ГҐГ±Г«ГЁ Г§Г ГЄГ°Г»Г« Г®ГЄГ­Г® - Г§Г ГўГҐГ°ГёГЁГІГј ГЇГ°Г®ГЈГ°Г Г¬Г¬Гі
             running = False
-    screen.fill((255,255,255)) # залить поле белым цветом
-    all_sprites.draw(screen) # нарисовать все спрайты(т.е. наши точки)
+    screen.fill((255,255,255)) # Г§Г Г«ГЁГІГј ГЇГ®Г«ГҐ ГЎГҐГ«Г»Г¬ Г¶ГўГҐГІГ®Г¬
+    all_sprites.draw(screen) # Г­Г Г°ГЁГ±Г®ГўГ ГІГј ГўГ±ГҐ Г±ГЇГ°Г Г©ГІГ»(ГІ.ГҐ. Г­Г ГёГЁ ГІГ®Г·ГЄГЁ)
     pygame.display.flip()
 pygame.quit()
