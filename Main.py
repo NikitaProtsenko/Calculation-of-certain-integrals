@@ -11,13 +11,13 @@ class Line(pygame.sprite.Sprite):
     def __init__(self,pos,x,y):
         pygame.sprite.Sprite.__init__(self)
         if pos=="x": # ось абсцисс
-            self.image=pygame.Surface((3,400)) # линия 3x400
+            self.image=pygame.Surface((1,400)) # линия 3x400
             self.image.fill((0,0,0)) # закрасить черным цветом
             self.rect = self.image.get_rect()
             self.rect.centerx = x # центр по x
             self.rect.centery = y # центр по y
         elif pos=="y": # ось ординат 
-            self.image=pygame.Surface((400,3)) # линия 3x400
+            self.image=pygame.Surface((400,1)) # линия 3x400
             self.image.fill((0,0,0)) # закрасить черным цветом
             self.rect = self.image.get_rect()
             self.rect.centerx = x # центр по x
@@ -25,7 +25,7 @@ class Line(pygame.sprite.Sprite):
 class Dot(pygame.sprite.Sprite):
     def __init__(self,x,y):
         pygame.sprite.Sprite.__init__(self)
-        self.image=pygame.surface.Surface((5,5)) # точка 5x5
+        self.image=pygame.surface.Surface((1,1)) # точка 5x5
         self.image.fill((0,0,0)) # закрасить черным цветом
         self.rect=self.image.get_rect()
         self.rect.centerx=x # центр по x
