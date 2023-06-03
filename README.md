@@ -1,7 +1,7 @@
 # Calculation-of-certain-integrals
 
- урсова€ работа вы численному вычислению определенных интегралов
+Course work on numerical calculation of certain integrals
 
-язык программировани€: Python 3.6 
-Ѕиблиотека: PyGame.
-јвторы: Nikita Protsenko, Fivochnik
+Programming language: Python 3.6
+Library: PyGame.
+Authors: Nikita Protsenko, Fivochnik
