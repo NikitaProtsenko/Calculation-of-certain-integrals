@@ -37,7 +37,6 @@ line = Line("y",pos[0],pos[1]) # Ã¤Ã®Ã¡Ã Ã¢Ã¨Ã²Ã¼ Ã®Ã±Ã¼ �
 all_sprites.add(line)
 line1 = Line("x",pos[0],pos[1]) # Ã¤Ã®Ã¡Ã Ã¢Ã¨Ã²Ã¼ Ã®Ã±Ã¼ Ã Ã¡Ã±Ã¶Ã¨Ã±Ã±
 all_sprites.add(line1)
-
 while running: # Ã®Ã±Ã­Ã®Ã¢Ã­Ã®Ã© Ã¶Ã¨ÃªÃ«
     clock.tick(fps)
     for event in pygame.event.get():
@@ -46,7 +45,7 @@ while running: # Ã®Ã±Ã­Ã®Ã¢Ã­Ã®Ã© Ã¶Ã¨ÃªÃ«
     
 
     screen.fill((255,255,255)) 
-    Rect_integral(screen,pos,1,6,"x**2",50)# Ã§Ã Ã«Ã¨Ã²Ã¼ Ã¯Ã®Ã«Ã¥ Ã¡Ã¥Ã«Ã»Ã¬ Ã¶Ã¢Ã¥Ã²Ã®Ã¬
+    Rect_integral(screen,pos,all_sprites,1,6,"x**2",50)# Ã§Ã Ã«Ã¨Ã²Ã¼ Ã¯Ã®Ã«Ã¥ Ã¡Ã¥Ã«Ã»Ã¬ Ã¶Ã¢Ã¥Ã²Ã®Ã¬
     all_sprites.draw(screen) # Ã­Ã Ã°Ã¨Ã±Ã®Ã¢Ã Ã²Ã¼ Ã¢Ã±Ã¥ Ã±Ã¯Ã°Ã Ã©Ã²Ã»(Ã².Ã¥. Ã­Ã Ã¸Ã¨ Ã²Ã®Ã·ÃªÃ¨)
     pygame.display.flip()
 pygame.quit()
