@@ -49,7 +49,7 @@ class Sprite(game.sprite.Sprite):
         del self
 
 def newScreen(width, height, name = None, img = None):
-    """Возвращает игровое окно."""
+    """Возвращает игровое коно."""
     screen = game.display.set_mode((width, height))
     if name != None:
         game.display.set_caption(name)
@@ -72,9 +72,9 @@ def Image(img):
             img = game.image.load(img).convert()
     return img
 
-def Rect(x:float,y:float,width, height):
+def Rect(width, height):
     """Возвращает прямоугольник для спрайта."""
-    return gameRect(x, y, width, height)
+    return gameRect(0, 0, width, height)
 
 def AllUpdate(screen, sprites, backColor, draw = True):
     """Обновляет кадр."""
