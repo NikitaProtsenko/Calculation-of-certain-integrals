@@ -1,5 +1,21 @@
+from importlib.machinery import all_suffixes
 from ForGame import *
 from math import sin, cos, tan, asin, acos, atan, sinh, cosh, log, pi, e
+
+from contextlib import contextmanager
+import sys, os
+
+@contextmanager
+def suppress_stdout():
+    with open(os.devnull, "w") as devnull:
+        old_stdout = sys.stdout
+        sys.stdout = devnull
+        try:  
+            yield
+        finally:
+            sys.stdout = old_stdout
+
+
 
 #Missing math functions:
 def cotan(x):
@@ -209,13 +225,16 @@ cuts - splitting of visible segment of function."""
                 p2 = ps[i],
                 color = (255, 255, 255))
 
-def draw_integral_rects(func: function, start: float = 0, end: float = 10, cuts: int = 100, sample: float = 0):
+def draw_integral_rects(func: function, start: float = 0, end: float = 10, cuts: int = 100, sample: float = 0, cl = (0, 255, 0)):
     """Draw rectangles of integral sum.
 func - function of one var x,
 start - bottom limit of integral,
 end - top limit of integral,
 cuts - splitting of segment,
 sample - x point of segment [0; 1] of calculating."""
+    if end < start:
+        draw_integral_rects(func, end, start, cuts, sample, (255, 0, 0))
+        return
     X, Y = MainCamera.pos
     W, H = MainCamera.size
     xmin = X - W / 2
@@ -231,9 +250,6 @@ sample - x point of segment [0; 1] of calculating."""
         except:
             y = None
         ps += [(x, y)]
-    cl = (0, 255, 0)
-    if dx < 0:
-        cl = (255, 0, 0)
     for i in range(1, len(ps)):
         x1, y1 = ps[i]
         if y1 is None:
@@ -249,23 +265,52 @@ sample - x point of segment [0; 1] of calculating."""
                 color = cl)
 
 #Globals for onStart function:
+f_str = None
 f = None
 c = None
 x1 = None
 x2 = None
 samp = None
 
+def integral_calculate_rect(func: function, start: float = 0, end: float = 10, cuts: int = 100, sample: float = 0):
+    S = 0
+    flag = True
+    if start > end:
+        value,flag = integral_calculate_rect(func,end,start,cuts,sample)
+        return (-value,flag)
+    dx = (end - start) / cuts
+    for i in range(cuts):
+        x = start + i * dx
+        if x < start or x > end:
+            continue
+        try:
+            y = func(x + dx * sample)
+            S = S + dx*y;    
+        except:
+            # In case of uncertainty, we output False.  
+            # This means that the integral can be calculated incorrectly.
+            flag = False
+    return (S,flag)
 def onStart():
-    global f, c, x1, x2, samp
-    f = new_function('sin(x)')
+    global f,f_str, c, x1, x2, samp
+    f_str = 'sin(x)'
+    f = new_function(f_str)
     c = 100
-    x1 = 0
-    x2 = 10
+    x1 = 10
+    x2 = 0
     samp = 0.5
-
+def draw_text(surf, text, size, x, y, color):
+    font = game.font.Font(None, size)
+    text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect()
+    text_rect.midtop = (x, y)
+    surf.blit(text_surface, text_rect)
 if __name__ == '__main__':
     onStart()
-    
+    WHITE = (255,255,255)
+    GREEN = (0,255,0)
+    RED = (255,0,0)
+    result = None
     while running:
         clock.tick(FPS)
         for event in gameEvents():
@@ -348,6 +393,18 @@ if __name__ == '__main__':
                             end = x2,
                             cuts = c,
                             sample = samp)
+        if result is None :
+            result = integral_calculate_rect(func = f,
+                            start = x1,
+                            end = x2,
+                            cuts = c,
+                            sample = samp) 
 
+        
+
+        suppress_stdout()
         AllUpdate(screen, all_sprites, (0, 0, 0))
+        draw_text(screen, "F(x) = "+ f_str ,20,100,20,WHITE)
+        draw_text(screen,"RESULT : "+str(result[0]),20,100,60,GREEN if result[1] else RED)
+        game.display.flip()
     game.quit()
