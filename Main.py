@@ -1,6 +1,12 @@
 from importlib.machinery import all_suffixes
+from turtle import width, window_width
 from ForGame import *
 from math import sin, cos, tan, asin, acos, atan, sinh, cosh, log, pi, e
+
+from pyautogui import prompt
+
+ 
+ 
 
 #Missing math functions:
 def cotan(x):
@@ -278,18 +284,20 @@ def integral_calculate_rect(func: function, start: float = 0, end: float = 10, c
     return (S,flag)
 def onStart():
     global f,f_str, c, x1, x2, samp
-    f_str = 'sin(x)'
+    f_str = prompt(text='Enter the function:', title='Function' , default='sin(x)')
     f = new_function(f_str)
     c = 100
-    x1 = 10
-    x2 = 0
+    x1 = float(prompt(text = 'Enter x1', title = 'x1', default = '0'))
+    x2 = float(prompt(text = 'Enter x2', title = 'x2', default = '10'))
     samp = 0.5
+
 def draw_text(surf, text, size, x, y, color):
     font = game.font.Font(None, size)
     text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect()
     text_rect.midtop = (x, y)
     surf.blit(text_surface, text_rect)
+
 if __name__ == '__main__':
     onStart()
     WHITE = (255,255,255)
