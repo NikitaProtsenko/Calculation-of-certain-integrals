@@ -2,21 +2,6 @@ from importlib.machinery import all_suffixes
 from ForGame import *
 from math import sin, cos, tan, asin, acos, atan, sinh, cosh, log, pi, e
 
-from contextlib import contextmanager
-import sys, os
-
-@contextmanager
-def suppress_stdout():
-    with open(os.devnull, "w") as devnull:
-        old_stdout = sys.stdout
-        sys.stdout = devnull
-        try:  
-            yield
-        finally:
-            sys.stdout = old_stdout
-
-
-
 #Missing math functions:
 def cotan(x):
     """Return the cotangent of x (measured in radians)."""
@@ -402,7 +387,6 @@ if __name__ == '__main__':
 
         
 
-        suppress_stdout()
         AllUpdate(screen, all_sprites, (0, 0, 0))
         draw_text(screen, "F(x) = "+ f_str ,20,100,20,WHITE)
         draw_text(screen,"RESULT : "+str(result[0]),20,100,60,GREEN if result[1] else RED)
