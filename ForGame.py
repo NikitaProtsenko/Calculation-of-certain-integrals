@@ -76,7 +76,7 @@ def Rect(width, height):
     """Возвращает прямоугольник для спрайта."""
     return gameRect(0, 0, width, height)
 
-def AllUpdate(screen, sprites, backColor, draw = True):
+def AllUpdate(screen: game.Surface, sprites: game.sprite.Group | list, backColor: (int, int, int), draw: bool = True, flip: bool = True):
     """Обновляет кадр."""
     screen.fill(backColor)
     if type(sprites) is list:
@@ -88,8 +88,8 @@ def AllUpdate(screen, sprites, backColor, draw = True):
         sprites.update()
         if draw:
             sprites.draw(screen)
-    game.display.flip()
-    return None
+    if flip:
+        game.display.flip()
 
 linkCount = lambda obj: sys.getrefcount(obj) - 1
 linkCount.__doc__ = 'Возвращает количество ссылок на объект obj.'
