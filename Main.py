@@ -35,6 +35,11 @@ all_lines = newGroup()
 #Rectangles group:
 all_rects = newGroup()
 
+#Pictures:
+picture = {}
+picture['width arrow up'] = Image('width_arrow_up.png')
+picture['control info'] = Image('control_info.png')
+
 #Run-flag:
 running = True
 
@@ -301,6 +306,8 @@ color - RGB-color."""
     surf.blit(text_surface, text_rect)
 
 #Globals for onStart function:
+c_info = None
+w_arrow = None
 f_str = None
 f = None
 c = None
@@ -314,7 +321,7 @@ RED = (255,0,0)
 
 def onStart():
     """Start function."""
-    global f,f_str, c, x1, x2, samp
+    global f,f_str, c, x1, x2, samp, c_info
     f_str = prompt(text = 'Enter the function:',
                    title = 'Function',
                    default='sin(x)')
@@ -328,6 +335,10 @@ def onStart():
                       default = '10'))
     maxdy = 1000
     samp = 0.5
+    c_info = Sprite(transform.scale(picture['control info'], (512, 128)), (0, 0))
+    c_info.rect.topright = (WIDTH, 0)
+    w_arrow = Sprite(transform.scale(picture['width arrow up'], (32, 16)), (0, 0))
+    w_arrow.rect.midtop = c_info.rect.midbottom
 
 if __name__ == '__main__':
     onStart()
