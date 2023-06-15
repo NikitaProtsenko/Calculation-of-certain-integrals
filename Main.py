@@ -3,17 +3,21 @@ from math import sin, cos, tan, asin, acos, atan, sinh, cosh, log, pi, e
 from pyautogui import prompt
 
 #Missing math functions:
-def cotan(x):
+def cotan(x: float) -> float:
     """Return the cotangent of x (measured in radians)."""
     return 1 / tan(x)
 
-def acotan(x):
+def acotan(x: float) -> float:
     """Return the arc cotangent of x (measured in radians)."""
     return pi / 2 - atan(x)
 
-def ln(x):
+def ln(x: float) -> float:
     """Return the natural logarithm of x."""
     return log(x)
+
+def lg(x: float) -> float:
+    """Return the decimal logarithm of x."""
+    return log(x, 10)
 
 #Math functions abbreviations:
 tg = tan
@@ -34,6 +38,8 @@ function = type(round)
 all_lines = newGroup()
 #Rectangles group:
 all_rects = newGroup()
+#Texts group:
+all_texts = newGroup()
 
 #Pictures:
 picture = {}
@@ -47,7 +53,8 @@ running = True
 Y_positive_vector_is_up = True
 
 #Current actions:
-actions = {'up': False, 'down': False, 'left': False, 'right': False}
+actions = {'up': False, 'down': False, 'left': False, 'right': False,
+           'tap on width arrow': False}
 
 #Mouse buttons:
 mouse_but = {1: False, 2: False, 3: False}
@@ -71,7 +78,7 @@ zoom_koef - speed of zoom."""
         all_lines.add(self)
 
     @property
-    def x(self):
+    def x(self) -> float:
         return self.pos[0]
 
     @x.setter
@@ -79,7 +86,7 @@ zoom_koef - speed of zoom."""
         self.pos = value, self.pos[1]
 
     @property
-    def y(self):
+    def y(self) -> float:
         return self.pos[1]
 
     @y.setter
@@ -179,18 +186,112 @@ color - RGB-color of rectangle."""
                   gameRect(x1, y1, x2 - x1, y2 - y1),
                   width = 1)
 
-def new_function(func: str):
+'''class figText(Sprite):
+    """Text."""
+
+    def __init__(self, text: str, pos: (float, float), size: int, color: (int, int, int) = (255, 255, 255)):
+        font = game.font.Font(None, size)
+        text_surface = font.render(text, True, color)
+        Sprite.__init__(self,
+                        image = text_surface,
+                        pos = (0, 0),
+                        rect = None)
+        self.pos = pos
+        self.size = self.rect.size
+        all_texts.add(self)
+
+    def update(self):
+        """Sprite update."""
+        self.draw()
+
+    def draw(self):
+        """Sprite draw."""
+        global screen, MainCamera
+        x, y = MainCamera.pos
+        dx, dy = [[WIDTH, HEIGHT][i] / MainCamera.size[i] for i in range(2)]
+        x1, y1 = self.pos
+        x2, y2 = self.size
+        x2 += x1
+        y2 += y1
+        sign = -1 if Y_positive_vector_is_up else 1
+        x1 = (x1 - x) * dx + WIDTH / 2
+        y1 = sign * (y1 - y) * dy + HEIGHT / 2
+        x2 = (x2 - x) * dx + WIDTH / 2
+        y2 = sign * (y2 - y) * dy + HEIGHT / 2
+        if x1 > x2:
+            x1, x2 = x2, x1
+        if y1 > y2:
+            y1, y2 = y2, y1
+        w, h = x2 - x1, y2 - y1
+        screen.blit(transform.scale(self.img(), (w, h)), gameRect(x1, x2, w, h))'''#Not worked!
+
+def function_point(func: function, x: float) -> (float, float):
+    """Return point of function in x.
+func - string of function of one var x,
+x - point value."""
+    try:
+        y = func(x)
+    except:
+        y = None
+    if not type(y) in [int, float]:
+        y = None
+    return x, y
+
+def new_function(func: str) -> function:
     """Return function from string func.
 func - string of function of one var x."""
     def res(x: float):
         """Function with var x."""
-        s = func
+        s = func.replace('^', '**')
         return eval(s)
     return res
 
 def draw_axes():
     """Draw axes of plane."""
-    pass
+    X, Y = MainCamera.pos
+    W, H = MainCamera.size
+    xmin = X - W / 2
+    xmax = xmin + W
+    ymin = Y - H / 2
+    ymax = ymin + H
+    size = W / 200
+    if ymin < 0 and ymax > 0:
+        figLine(p1 = (xmin, 0),
+                p2 = (xmax, 0),
+                color = (0, 0, 255))
+    if xmin < 0 and xmax > 0:
+        figLine(p1 = (0, ymin),
+                p2 = (0, ymax),
+                color = (0, 0, 255))
+    d = int(lg(W))
+    small = 10 ** (d - 1)
+    big = small * 10
+    left_ruler = small * int(xmin // small)
+    if xmin > 0:
+        left_ruler += small
+    bottom_ruler = small * int(ymin // small)
+    if ymin > 0:
+        bottom_ruler += small
+    ruler_count_Ox = int((xmax - left_ruler) // small)
+    ruler_count_Oy = int((ymax - bottom_ruler) // small)
+    ruler_Ox = list(map(lambda i: left_ruler + i * small,
+                    range(ruler_count_Ox)))
+    ruler_Oy = list(map(lambda i: bottom_ruler + i * small,
+                    range(ruler_count_Oy)))
+    list(map(lambda i: (figLine(p1 = (i, -size * 2),
+                               p2 = (i, size * 2),
+                               color = (0, 255, 255)) if (i % big) < small * 2 / 3 else
+                        figLine(p1 = (i, -size),
+                                p2 = (i, size),
+                                color = (0, 0, 255))),
+             ruler_Ox))
+    list(map(lambda i: (figLine(p1 = (-size * 2, i),
+                               p2 = (size * 2, i),
+                               color = (0, 255, 255)) if (i % big) < small * 2 / 3 else
+                        figLine(p1 = (-size, i),
+                                p2 = (size, i),
+                                color = (0, 0, 255))),
+             ruler_Oy))
 
 def draw_function(func: function, cuts: int = 100):
     """Draw visible part of function on screen.
@@ -200,8 +301,13 @@ cuts - splitting of visible segment of function."""
     W, H = MainCamera.size
     xmin = X - W / 2
     xmax = xmin + W
+    ymin = Y - H / 2
+    ymax = ymin + H
     dx = (xmax - xmin) / cuts
-    ps = []
+    ps = list(map(lambda i: function_point(func = func,
+                                           x = xmin + i * dx),
+                  range(cuts + 1)))
+    '''ps = []
     for i in range(cuts + 1):
         x = xmin + i * dx
         try:
@@ -210,13 +316,20 @@ cuts - splitting of visible segment of function."""
             y = None
         if not type(y) in [int, float]:
             y = None
-        ps += [(x, y)]
-    for i in range(1, len(ps)):
+        ps += [(x, y)]'''
+    ps = list(map(lambda p: p if p[1] is None or p[1] >= ymin and p[1] <= ymax else (p[0], None),
+                  ps))
+    #Be sure to convert to list to craete figLines:
+    list(map(lambda i: figLine(p1 = ps[i - 1],
+                               p2 = ps[i],
+                               color = (255, 255, 255)) if not (ps[i - 1][1] is None or ps[i][1] is None) else None,
+             range(1, len(ps))))
+    '''for i in range(1, len(ps)):
         if ps[i - 1][1] is None or ps[i][1] is None:
             continue
         figLine(p1 = ps[i - 1],
                 p2 = ps[i],
-                color = (255, 255, 255))
+                color = (255, 255, 255))'''
 
 def draw_integral_rects(func: function, start: float = 0, end: float = 10, cuts: int = 100, sample: float = 0, cl = (0, 255, 0)):
     """Draw rectangles of integral sum.
@@ -233,47 +346,77 @@ sample - x point of segment [0; 1] of calculating."""
     xmin = X - W / 2
     xmax = xmin + W
     dx = (end - start) / cuts
-    ps = []
+    start += (int((xmin - start) // dx) * dx) if start < xmin else 0
+    end += (int((xmax - end) // dx) * dx) if end > xmax else 0
+    if end <= start:
+        return
+    cuts = int((end - start) // dx) + 1
+    ps = list(map(lambda i: function_point(func, start + (i + sample) * dx),
+                  range(cuts)))
+    '''ps = []
     for i in range(cuts):
         x = start + i * dx
-        if x < start or x > end:
-            continue
         try:
             y = func(x + dx * sample)
         except:
             y = None
         if not type(y) in [int, float]:
             y = None
-        ps += [(x, y)]
-    for i in range(1, len(ps)):
+        ps += [(x, y)]'''
+    list(map(lambda i: figRect(pos = (ps[i][0] - dx * sample, ps[i][1]) if ps[i][1] < 0 else (ps[i][0] - dx * sample, 0),
+                               size = (dx, abs(ps[i][1])),
+                               color = cl) if not ps[i][1] is None else None,
+             range(len(ps))))
+    '''for i in range(len(ps)):
         x1, y1 = ps[i]
+        x1 -= dx * sample
         if y1 is None:
             continue
         x2 = x1 + dx
         y2 = 0
-        if x1 > x2:
-            x1, x2 = x2, x1
         if y1 > y2:
             y1, y2 = y2, y1
         figRect(pos = (x1, y1),
-                size = (x2 - x1, y2 - y1),
-                color = cl)
+                size = (dx, y2 - y1),
+                color = cl)'''
 
-def integral_calculate_rect(func: function, start: float = 0, end: float = 10, cuts: int = 100, sample: float = 0):
+def calculate_rect(func: function, x: float, dx: float, right: [bool] = [True]) -> float:
+    """Return square area with width dx and height func(x).
+func - function of one var x,
+x - point value,
+dx - square width,
+right - stay [True] if calculate done else [False]."""
+    x, y = function_point(func, x)
+    s = 0
+    if y is None:
+        right[0] = False
+    else:
+        s = y * dx
+    return s
+
+def integral_calculate_rect(func: function, start: float = 0, end: float = 10, cuts: int = 100, sample: float = 0) -> (float, bool):
     """Return value of integral of function and False if function exactly has a singularity else True.
 func - function of one var x,
 start - bottom limit of integral,
 end - top limit of integral,
 cuts - splitting of segment,
 sample - x point of segment [0; 1] of calculating."""
-    S = 0
-    prev_y = None
-    flag = True
     if start > end:
-        value,flag = integral_calculate_rect(func,end,start,cuts,sample)
-        return (-value,flag)
+        value, flag = integral_calculate_rect(func = func,
+                                              start = end,
+                                              end = start,
+                                              cuts = cuts,
+                                              sample = sample)
+        return -value, flag
+    S = 0
+    flag = [True]
     dx = (end - start) / cuts
-    for i in range(cuts):
+    S = sum(map(lambda i: calculate_rect(func = func,
+                                         x = start + (i + sample) * dx,
+                                         dx = dx,
+                                         right = flag),
+                range(cuts)))
+    '''for i in range(cuts):
         x = start + i * dx
         if x < start or x > end:
             continue
@@ -283,14 +426,12 @@ sample - x point of segment [0; 1] of calculating."""
                 y = None
                 flag = False
             else:
-                if not prev_y is None and abs(y - prev_y) > maxdy * dx:
-                    flag = False
-                S = S + dx*y
+                S = S + dx * y
         except:
             # In case of uncertainty, we output False.  
             # This means that the integral can be calculated incorrectly.
-            flag = False
-    return S, flag
+            flag = False'''
+    return S, flag[0]
 
 def draw_text(surf: game.Surface, text: str, size: int, x: int, y: int, color: (int, int, int)):
     """Draw text on surface surf.
@@ -304,10 +445,13 @@ color - RGB-color."""
     text_rect = text_surface.get_rect()
     text_rect.topleft = (x, y)
     surf.blit(text_surface, text_rect)
-
+    
 #Globals for onStart function:
+c_info_pic = None
 c_info = None
+w_arrow_pic = None
 w_arrow = None
+info_show = None
 f_str = None
 f = None
 c = None
@@ -315,13 +459,15 @@ x1 = None
 x2 = None
 samp = None
 maxdy = None
-WHITE = (255,255,255)
-GREEN = (0,255,0)
-RED = (255,0,0)
+show_function = None
+show_integral = None
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
 
 def onStart():
     """Start function."""
-    global f,f_str, c, x1, x2, samp, c_info
+    global f_str, f, c, x1, x2, samp, show_function, show_integral, c_info_pic, c_info, w_arrow_pic, w_arrow, info_show
     f_str = prompt(text = 'Enter the function:',
                    title = 'Function',
                    default='sin(x)')
@@ -335,10 +481,17 @@ def onStart():
                       default = '10'))
     maxdy = 1000
     samp = 0.5
-    c_info = Sprite(transform.scale(picture['control info'], (512, 128)), (0, 0))
+    show_function = True
+    show_integral = True
+    w, h = picture['control info'].get_size()
+    c_info_pic = transform.scale(picture['control info'], (w * 2, h * 2))
+    c_info = Sprite(c_info_pic, (0, 0))
     c_info.rect.topright = (WIDTH, 0)
-    w_arrow = Sprite(transform.scale(picture['width arrow up'], (32, 16)), (0, 0))
+    w, h = picture['width arrow up'].get_size()
+    w_arrow_pic = transform.scale(picture['width arrow up'], (w * 2, h * 2))
+    w_arrow = Sprite(w_arrow_pic, (0, 0))
     w_arrow.rect.midtop = c_info.rect.midbottom
+    info_show = True
 
 if __name__ == '__main__':
     onStart()
@@ -367,37 +520,53 @@ if __name__ == '__main__':
                 if event.key == game.K_UP or event.key == game.K_w:
                     actions['up'] = False
                 
-                if event.key == game.K_DOWN or event.key == game.K_s:
+                elif event.key == game.K_DOWN or event.key == game.K_s:
                     actions['down'] = False
                 
-                if event.key == game.K_LEFT or event.key == game.K_a:
+                elif event.key == game.K_LEFT or event.key == game.K_a:
                     actions['left'] = False
                 
-                if event.key == game.K_RIGHT or event.key == game.K_d:
+                elif event.key == game.K_RIGHT or event.key == game.K_d:
                     actions['right'] = False
 
-                if event.key == game.K_f:
+                elif event.key == game.K_f:
                     f_str = prompt(text = 'Enter the function:',
                                    title = 'Function',
                                    default = f_str)
                     f = new_function(f_str)
                     result = None
 
-                if event.key == game.K_r:
-                    x1 = float(prompt(text = 'Enter start of integral',
-                                      title = 'Region',
-                                      default = str(x1)))
-                    x2 = float(prompt(text = 'Enter end of integral',
-                                      title = 'Region',
-                                      default = str(x2)))
+                elif event.key == game.K_r:
+                    x1 = eval(prompt(text = 'Enter start of integral',
+                                     title = 'Region',
+                                     default = str(x1)))
+                    x2 = eval(prompt(text = 'Enter end of integral',
+                                     title = 'Region',
+                                     default = str(x2)))
                     result = None
 
-                if event.key == game.K_m:
+                elif event.key == game.K_m:
                     c = int(prompt(text = 'Enter the spliting:',
                                    title = 'Spliting',
                                    default = str(c)))
                     result = None
-                    
+                
+                elif event.key == game.K_z:
+                    show_function = not show_function
+                
+                elif event.key == game.K_x:
+                    show_integral = not show_integral
+
+                elif event.key == game.K_i:
+                    if info_show:
+                        c_info.rect.bottom = 0
+                        w_arrow.rect.top = 0
+                        w_arrow.img(transform.flip(w_arrow_pic, False, True))
+                    else:
+                        c_info.rect.top = 0
+                        w_arrow.rect.top = c_info.rect.bottom
+                        w_arrow.img(w_arrow_pic)
+                    info_show = not info_show
             #Mouse wheel:
             if event.type == game.MOUSEWHEEL:
                 if event.y == 1:
@@ -410,16 +579,33 @@ if __name__ == '__main__':
             #Mouse button down:
             if event.type == game.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    #x1 = ((event.pos[0] * 2 / WIDTH - 1) * MainCamera.size[0] + MainCamera.pos[0]) / 2
-                    x1 = MainCamera.x + (event.pos[0] - WIDTH / 2) * MainCamera.size[0] / WIDTH
-                    mouse_but[1] = True
-                    result = None
+                    if (event.pos[0] > w_arrow.rect.left and event.pos[0] < w_arrow.rect.right and
+                        event.pos[1] > w_arrow.rect.top and event.pos[1] < w_arrow.rect.bottom):
+                        actions['tap on width arrow'] = True
+                    else:
+                        x1 = MainCamera.x + (event.pos[0] - WIDTH / 2) * MainCamera.size[0] / WIDTH
+                        mouse_but[1] = True
+                        result = None
                 if event.button in [2, 3]:
                     mouse_but[event.button] = True
             #Mouse button up:
             if event.type == game.MOUSEBUTTONUP:
+                if event.button == 1:
+                    if (event.pos[0] > w_arrow.rect.left and event.pos[0] < w_arrow.rect.right and
+                        event.pos[1] > w_arrow.rect.top and event.pos[1] < w_arrow.rect.bottom and
+                        actions['tap on width arrow']):
+                        if info_show:
+                            c_info.rect.bottom = 0
+                            w_arrow.rect.top = 0
+                            w_arrow.img(transform.flip(w_arrow_pic, False, True))
+                        else:
+                            c_info.rect.top = 0
+                            w_arrow.rect.top = c_info.rect.bottom
+                            w_arrow.img(w_arrow_pic)
+                        info_show = not info_show
                 if event.button in [1, 2, 3]:
                     mouse_but[event.button] = False
+                actions['tap on width arrow'] = False
             #Mouse moution:
             if event.type == game.MOUSEMOTION:
                 if mouse_but[3]:
@@ -449,19 +635,27 @@ if __name__ == '__main__':
             result = None
 
         #For redraw:
-        for i in all_lines.sprites():
+        list(map(lambda i: i.delete(),
+                 all_lines.sprites() +
+                 all_rects.sprites() +
+                 all_texts.sprites()))
+        '''for i in all_lines.sprites():
             i.delete()
         for i in all_rects.sprites():
-            i.delete()
+            i.delete()'''
 
         #Redraw objects:
-        draw_function(func = f,
-                      cuts = c)
-        draw_integral_rects(func = f,
-                            start = x1,
-                            end = x2,
-                            cuts = c,
-                            sample = samp)
+        if show_function:
+            draw_function(func = f,
+                          cuts = c)
+        if show_integral:
+            draw_integral_rects(func = f,
+                                start = x1,
+                                end = x2,
+                                cuts = c,
+                                sample = samp)
+
+        draw_axes()
 
         #Integral value:
         if result is None :
