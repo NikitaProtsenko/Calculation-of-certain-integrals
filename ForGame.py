@@ -76,7 +76,7 @@ def Rect(width, height):
     """Возвращает прямоугольник для спрайта."""
     return gameRect(0, 0, width, height)
 
-def AllUpdate(screen: game.Surface, sprites: game.sprite.Group | list, backColor: (int, int, int), draw: bool = True, flip: bool = True):
+def AllUpdate(screen: game.Surface, sprites: game.sprite.Group, backColor: (int, int, int), draw: bool = True, flip: bool = True):
     """Обновляет кадр."""
     screen.fill(backColor)
     if type(sprites) is list:
