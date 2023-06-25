@@ -1,6 +1,3 @@
-from ast import Lambda
-from logging.config import fileConfig
-from typing_extensions import Self
 from ForGame import *
 from math import sin, cos, tan, asin, acos, atan, sinh, cosh, log, pi, e
 from pyautogui import prompt
@@ -41,8 +38,10 @@ function = type(round)
 all_lines = newGroup()
 #Rectangles group:
 all_rects = newGroup()
-#Texts group:
-all_texts = newGroup()
+#Trapeziods group:
+all_trapezoids = newGroup()
+#Curve trapezoids group:
+all_curve_trapezoids = newGroup()
 
 #Pictures:
 picture = {}
@@ -190,24 +189,24 @@ color - RGB-color of rectangle."""
                   width = 1)
 
 class figTrapezoid(Sprite):
-    """Rect.
+    """Trapeze on the side.
 pos - position of min point of axes,
-width - ,
-heightRight - ,
-heightLeft - ,
+width - height of trapezoid,
+leftBase - left base of trapezoid,
+rightBase - right base of trapezoid,
 color - RGB-color of rectangle."""
 
-    def __init__(self, pos: (float, float), width : float, heightLeft : float, heightRight : float, color = (0, 0, 0)):
+    def __init__(self, pos: (float, float), width : float, leftBase : float, rightBase : float, color = (0, 0, 0)):
         Sprite.__init__(self,
                         image = Surface((0, 0), (0, 0, 0)),
                         pos = (0, 0),
                         rect = None)
         self.pos = pos
         self.width = width
-        self.heightLeft = heightLeft
-        self.heightRight = heightRight
+        self.leftBase = leftBase
+        self.rightBase = rightBase
         self.color = color
-        all_rects.add(self)
+        all_trapezoids.add(self)
 
     def update(self):
         """Sprite update."""
@@ -220,8 +219,8 @@ color - RGB-color of rectangle."""
         dx, dy = [[WIDTH, HEIGHT][i] / MainCamera.size[i] for i in range(2)]
         x1, y1 = self.pos
         x2 = self.width 
-        yl = self.heightLeft
-        yr = self.heightRight
+        yl = self.leftBase
+        yr = self.rightBase
         x2 += x1
         yl += y1
         yr += y1
@@ -234,63 +233,51 @@ color - RGB-color of rectangle."""
         if x1 > x2:
             x1, x2 = x2, x1
         draw.polygon(screen,
-                  self.color,
-                  [(x1,y1),(x2,y1),(x2,yr),(x1,yl)],
-                  width = 1)
+                     self.color,
+                     [(x1, y1), (x2, y1), (x2, yr), (x1, yl)],
+                     width = 1)
 
 class figCurveTrapezoid(Sprite):
-    """Curve.
-pos - position of min point of axes,
-width - ,
-heightRight - ,
-heightLeft - ,
+    """Trapeze on the straight side.
+p1, p2, p3 - points of curve side of trapezoid,
 color - RGB-color of rectangle."""
 
-    def __init__(self, p1: (float, float), p2 : (float,float), p3 : (float,float), cuts : int = 10, color = (0, 0, 0)):
+    def __init__(self, p1: (float, float), p2 : (float,float), p3 : (float,float), cuts = 10, color = (0, 0, 0)):
         Sprite.__init__(self,
                         image = Surface((0, 0), (0, 0, 0)),
                         pos = (0, 0),
                         rect = None)
-        self.p1,self.p2,self.p3 = sorted([p1,p2,p3],key = lambda p: p[0])
-        
-        x1,y1 = self.p1
-        x2,y2 = self.p2
-        x3,y3 = self.p3
+        self.p1, self.p2, self.p3 = sorted([p1, p2, p3], key = lambda p: p[0])
 
-        a = (y3 - ((x3*(y2-y1)+x2*y1-x1*y2)/(x2-x1)))/(x3*(x3-x1-x2)+x1*x2)
-        b = (y2-y1)/(x2-x1)-a*(x1+x2)
-        c = (x2*y1-x1*y2)/(x2-x1)+a*x1*x2
-        self.function = new_function(str(a)+'*x*x+'+str(b)+'*x+'+str(c))
+        self.function = figCurveTrapezoid.parabola(self.p1, self.p2, self.p3)
         self.color = color
-        all_rects.add(self)
-        dx = (x3 - x1)/cuts
-        ps = list(map(lambda i : (p1[0]+dx*i,self.function(p1[0]+dx*i)) ,
-                      range(cuts+1) ))
-        list(map(lambda i : figLine(ps[i],ps[i+1],self.color),
-             range(cuts)))
+        dx = (self.p3[0] - self.p1[0]) / cuts
+        ps = list(map(lambda i : ((px := p1[0] + dx * i), self.function(px)) ,
+                      range(cuts + 1) ))
+        list(map(lambda i : figLine(ps[i], ps[i + 1], self.color),
+                 range(cuts)))
+        all_curve_trapezoids.add(self)
 
-    def update(self):
-        """Sprite update."""
-        self.draw()
-
-    def draw(self):
-       return
+    def parabola(p1: (float, float), p2: (float, float), p3: (float, float)) -> function:
+        """Return parabola of 3 points."""
+        x1, y1 = p1
+        x2, y2 = p2
+        x3, y3 = p3
         
-
-
-'''class figText(Sprite):
-    """Text."""
-
-    def __init__(self, text: str, pos: (float, float), size: int, color: (int, int, int) = (255, 255, 255)):
-        font = game.font.Font(None, size)
-        text_surface = font.render(text, True, color)
-        Sprite.__init__(self,
-                        image = text_surface,
-                        pos = (0, 0),
-                        rect = None)
-        self.pos = pos
-        self.size = self.rect.size
-        all_texts.add(self)
+        dy2y1 = y2 - y1
+        x1x2 = x1 * x2
+        x2y1 = x2 * y1
+        x1y2 = x1 * y2
+        sx1x2 = x1 + x2
+        dx2x1 = x2 - x1
+        dx2y1_x1y2 = x2y1 - x1y2
+        try:
+            a = (y3 - ((x3 * dy2y1 + dx2y1_x1y2) / (x2 - x1))) / (x3 * (x3 - sx1x2) + x1x2)
+            b = dy2y1 / dx2x1 - a * sx1x2
+            c = dx2y1_x1y2 / dx2x1 + a * x1x2
+            return new_function(f'{a}*x*x + {b}*x + {c}')
+        except:
+            return lambda x: 0
 
     def update(self):
         """Sprite update."""
@@ -301,21 +288,22 @@ color - RGB-color of rectangle."""
         global screen, MainCamera
         x, y = MainCamera.pos
         dx, dy = [[WIDTH, HEIGHT][i] / MainCamera.size[i] for i in range(2)]
-        x1, y1 = self.pos
-        x2, y2 = self.size
-        x2 += x1
-        y2 += y1
+        x1, yl = self.p1
+        y1 = 0
+        x2, yr = self.p3
         sign = -1 if Y_positive_vector_is_up else 1
         x1 = (x1 - x) * dx + WIDTH / 2
         y1 = sign * (y1 - y) * dy + HEIGHT / 2
         x2 = (x2 - x) * dx + WIDTH / 2
-        y2 = sign * (y2 - y) * dy + HEIGHT / 2
+        yl = sign * (yl - y) * dy + HEIGHT / 2
+        yr = sign * (yr - y) * dy + HEIGHT / 2
         if x1 > x2:
             x1, x2 = x2, x1
-        if y1 > y2:
-            y1, y2 = y2, y1
-        w, h = x2 - x1, y2 - y1
-        screen.blit(transform.scale(self.img(), (w, h)), gameRect(x1, x2, w, h))'''#Not worked!
+        draw.lines(screen,
+                   self.color,
+                   False,
+                   [(x1, yl), (x1, y1), (x2, y1), (x2, yr)],
+                   width = 1)
 
 def function_point(func: function, x: float) -> (float, float):
     """Return point of function in x.
@@ -399,16 +387,6 @@ cuts - splitting of visible segment of function."""
     ps = list(map(lambda i: function_point(func = func,
                                            x = xmin + i * dx),
                   range(cuts + 1)))
-    '''ps = []
-    for i in range(cuts + 1):
-        x = xmin + i * dx
-        try:
-            y = func(x)
-        except:
-            y = None
-        if not type(y) in [int, float]:
-            y = None
-        ps += [(x, y)]'''
     ps = list(map(lambda p: p if p[1] is None or p[1] >= ymin and p[1] <= ymax else (p[0], None),
                   ps))
     #Be sure to convert to list to craete figLines:
@@ -416,12 +394,6 @@ cuts - splitting of visible segment of function."""
                                p2 = ps[i],
                                color = (255, 255, 255)) if not (ps[i - 1][1] is None or ps[i][1] is None) else None,
              range(1, len(ps))))
-    '''for i in range(1, len(ps)):
-        if ps[i - 1][1] is None or ps[i][1] is None:
-            continue
-        figLine(p1 = ps[i - 1],
-                p2 = ps[i],
-                color = (255, 255, 255))'''
 
 def draw_integral_rects(func: function, start: float = 0, end: float = 10, cuts: int = 100, sample: float = 0, cl = (0, 255, 0)):
     """Draw rectangles of integral sum.
@@ -429,7 +401,8 @@ func - function of one var x,
 start - bottom limit of integral,
 end - top limit of integral,
 cuts - splitting of segment,
-sample - x point of segment [0; 1] of calculating."""
+sample - x point of segment [0; 1] of calculating,
+cl - color of integral figures."""
     if end < start:
         draw_integral_rects(func, end, start, cuts, sample, (255, 0, 0))
         return
@@ -445,32 +418,10 @@ sample - x point of segment [0; 1] of calculating."""
     cuts = int((end - start) // dx) + 1
     ps = list(map(lambda i: function_point(func, start + (i + sample) * dx),
                   range(cuts)))
-    '''ps = []
-    for i in range(cuts):
-        x = start + i * dx
-        try:
-            y = func(x + dx * sample)
-        except:
-            y = None
-        if not type(y) in [int, float]:
-            y = None
-        ps += [(x, y)]'''
-    list(map(lambda i: figRect(pos = (ps[i][0] - dx * sample, ps[i][1]) if ps[i][1] < 0 else (ps[i][0] - dx * sample, 0),
-                               size = (dx, abs(ps[i][1])),
-                               color = cl) if not ps[i][1] is None else None,
+    list(map(lambda i: ((px := ps[i][0] - dx * sample), figRect(pos = (px, ps[i][1]) if ps[i][1] < 0 else (px, 0),
+                                                                size = (dx, abs(ps[i][1])),
+                                                                color = cl)) if not ps[i][1] is None else None,
              range(len(ps))))
-    '''for i in range(len(ps)):
-        x1, y1 = ps[i]
-        x1 -= dx * sample
-        if y1 is None:
-            continue
-        x2 = x1 + dx
-        y2 = 0
-        if y1 > y2:
-            y1, y2 = y2, y1
-        figRect(pos = (x1, y1),
-                size = (dx, y2 - y1),
-                color = cl)'''
 
 def calculate_rect(func: function, x: float, dx: float, right: [bool] = [True]) -> float:
     """Return square area with width dx and height func(x).
@@ -508,35 +459,7 @@ sample - x point of segment [0; 1] of calculating."""
                                          dx = dx,
                                          right = flag),
                 range(cuts)))
-    '''for i in range(cuts):
-        x = start + i * dx
-        if x < start or x > end:
-            continue
-        try:
-            y = func(x + dx * sample)
-            if not type(y) in [int, float]:
-                y = None
-                flag = False
-            else:
-                S = S + dx * y
-        except:
-            # In case of uncertainty, we output False.  
-            # This means that the integral can be calculated incorrectly.
-            flag = False'''
     return S, flag[0]
-
-def draw_text(surf: game.Surface, text: str, size: int, x: int, y: int, color: (int, int, int)):
-    """Draw text on surface surf.
-surf - surface for drawning,
-text - text for drawning,
-size - font size,
-x, y - position of drawning,
-color - RGB-color."""
-    font = game.font.Font(None, size)
-    text_surface = font.render(text, True, color)
-    text_rect = text_surface.get_rect()
-    text_rect.topleft = (x, y)
-    surf.blit(text_surface, text_rect)
 
 
 def draw_integral_trapezoid(func: function, start: float = 0, end: float = 10, cuts: int = 100, cl = (0, 255, 0)):
@@ -544,7 +467,8 @@ def draw_integral_trapezoid(func: function, start: float = 0, end: float = 10, c
 func - function of one var x,
 start - bottom limit of integral,
 end - top limit of integral,
-cuts - splitting of segment"""
+cuts - splitting of segment,
+cl - color of integral figures."""
     if end < start:
         draw_integral_trapezoid(func, end, start, cuts, (255, 0, 0))
         return
@@ -559,50 +483,27 @@ cuts - splitting of segment"""
         return
     cuts = int((end - start) // dx) + 1
     ps = list(map(lambda i: function_point(func, start + i * dx),
-                  range(cuts+1)))
-    '''ps = []
-    for i in range(cuts):
-        x = start + i * dx
-        try:
-            y = func(x + dx * sample)
-        except:
-            y = None
-        if not type(y) in [int, float]:
-            y = None
-        ps += [(x, y)]'''
-    list(map(lambda i: figTrapezoid(pos = (ps[i][0], 0), 
-                               #size = (dx, abs(ps[i][1])),
+                  range(cuts)))
+    list(map(lambda i: figTrapezoid(pos = (ps[i][0], 0),
                                width = dx,
-                               heightLeft = ps[i][1],
-                               heightRight= ps[i+1][1],
+                               leftBase = ps[i][1],
+                               rightBase = ps[i + 1][1],
                                color = cl) if not ps[i][1] is None else None,
-             range(len(ps)-1)))
-    '''for i in range(len(ps)):
-        x1, y1 = ps[i]
-        x1 -= dx * sample
-        if y1 is None:
-            continue
-        x2 = x1 + dx
-        y2 = 0
-        if y1 > y2:
-            y1, y2 = y2, y1
-        figRect(pos = (x1, y1),
-                size = (dx, y2 - y1),
-                color = cl)'''
+             range(len(ps) - 1)))
 
 def calculate_trapezoid(func: function, x: float, dx: float, right: [bool] = [True]) -> float:
     """Return square area with width dx and height func(x).
 func - function of one var x,
 x - point value,
-dx - square width,
+dx - trapezoid height,
 right - stay [True] if calculate done else [False]."""
     x, y1 = function_point(func, x)
-    y2 = func(x+dx)
+    y2 = func(x + dx)
     s = 0
     if (y1 is None) or (y2 is None):
         right[0] = False
     else:
-        s = ((y1+y2)/2) * dx
+        s = ((y1 + y2) / 2) * dx
     return s
 
 def integral_calculate_trapezoid(func: function, start: float = 0, end: float = 10, cuts: int = 100) -> (float, bool):
@@ -625,31 +526,16 @@ cuts - splitting of segment."""
                                          dx = dx,
                                          right = flag),
                 range(cuts)))
-    '''for i in range(cuts):
-        x = start + i * dx
-        if x < start or x > end:
-            continue
-        try:
-            y = func(x + dx * sample)
-            if not type(y) in [int, float]:
-                y = None
-                flag = False
-            else:
-                S = S + dx * y
-        except:
-            # In case of uncertainty, we output False.  
-            # This means that the integral can be calculated incorrectly.
-            flag = False'''
     return S, flag[0]
-
-
 
 def draw_integral_curve_trapezoid(func: function, start: float = 0, end: float = 10, cuts: int = 100, sample: float = 0.5, cl = (0, 255, 0)):
     """Draw rectangles of integral sum.
 func - function of one var x,
 start - bottom limit of integral,
 end - top limit of integral,
-cuts - splitting of segment"""
+cuts - splitting of segment,
+sample - x point of segment [0; 1] of calculating,
+cl - color of integral figures."""
     if end < start:
         draw_integral_curve_trapezoid(func, end, start, cuts, sample, (255, 0, 0))
         return
@@ -657,62 +543,41 @@ cuts - splitting of segment"""
     W, H = MainCamera.size
     xmin = X - W / 2
     xmax = xmin + W
-    dx = (end - start) / cuts
+    cuts2 = int(cuts ** 0.5)
+    dx = (end - start) / cuts2
     start += (int((xmin - start) // dx) * dx) if start < xmin else 0
     end += (int((xmax - end) // dx) * dx) if end > xmax else 0
     if end <= start:
         return
     cuts = int((end - start) // dx) + 1
     ps = list(map(lambda i: function_point(func, start + i * dx),
-                  range(cuts+1)))
-    '''ps = []
-    for i in range(cuts):
-        x = start + i * dx
-        try:
-            y = func(x + dx * sample)
-        except:
-            y = None
-        if not type(y) in [int, float]:
-            y = None
-        ps += [(x, y)]'''
+                  range(cuts)))
     list(map(lambda i: figCurveTrapezoid(p1 = ps[i], 
-                                         p2 = (ps[i][0]+sample*dx, func(ps[i][0]+sample*dx)),
-                                           p3 = ps [i+1],
-                                           cuts = 2,
-                                           color = cl) if not ps[i][1] is None else None,
-             range(len(ps)-1)))
-    '''for i in range(len(ps)):
-        x1, y1 = ps[i]
-        x1 -= dx * sample
-        if y1 is None:
-            continue
-        x2 = x1 + dx
-        y2 = 0
-        if y1 > y2:
-            y1, y2 = y2, y1
-        figRect(pos = (x1, y1),
-                size = (dx, y2 - y1),
-                color = cl)'''
+                                         p2 = ((px := ps[i][0] + sample * dx), func(px)),
+                                         p3 = ps[i + 1],
+                                         cuts = cuts2,
+                                         color = cl) if not ps[i][1] is None else None,
+             range(len(ps) - 1)))
 
 def calculate_curve_trapezoid(func: function, x: float, dx: float, right: [bool] = [True]) -> float:
     """Return square area with width dx and height func(x).
 func - function of one var x,
 x - point value,
-dx - square width,
+dx - trapezoid height,
 right - stay [True] if calculate done else [False]."""
     a = x
-    b = x +dx
+    b = x + dx
     y1 = func(a)
     y2 = func(b)
-    y3 = func((a+b)/2)
+    y3 = func((a + b) / 2)
     s = 0
     if (y1 is None) or (y2 is None) or (y3 is None):
         right[0] = False
     else:
-        s = ((b-a)/6)*(y1+4*y3+y2)
+        s = ((b - a) / 6) * (y1 + 4 * y3 + y2)
     return s
 
-def integral_calculate_curve_trapezoid(func: function, start: float = 0, end: float = 10, cuts: int = 100) -> (float, bool):
+def integral_calculate_curve_trapezoid(func: function, start: float = 0, end: float = 10, cuts: int = 100, sample: float = 0.5) -> (float, bool):
     """Return value of integral of function and False if function exactly has a singularity else True.
 func - function of one var x,
 start - bottom limit of integral,
@@ -720,38 +585,36 @@ end - top limit of integral,
 cuts - splitting of segment."""
     if start > end:
         value, flag = integral_calculate_curve_trapezoid (func = func,
-                                              start = end,
-                                              end = start,
-                                              cuts = cuts)
+                                                          start = end,
+                                                          end = start,
+                                                          cuts = cuts,
+                                                          sample = sample)
         return -value, flag
     S = 0
     flag = [True]
+    cuts = int(cuts ** 0.5)
     dx = (end - start) / cuts
-    S = sum(map(lambda i: calculate_curve_trapezoid(func = func,
-                                         x = start + i * dx,
-                                         dx = dx,
-                                         right = flag),
+    S = sum(map(lambda i: calculate_curve_trapezoid(func = figCurveTrapezoid.parabola(p1 = ((px := (x0 := start + i * dx)), func(px)),
+                                                                                      p2 = ((px := x0 + sample * dx), func(px)),
+                                                                                      p3 = ((px := x0 + dx, func(px)))),
+                                                    x = x0,
+                                                    dx = dx,
+                                                    right = flag),
                 range(cuts)))
-    '''for i in range(cuts):
-        x = start + i * dx
-        if x < start or x > end:
-            continue
-        try:
-            y = func(x + dx * sample)
-            if not type(y) in [int, float]:
-                y = None
-                flag = False
-            else:
-                S = S + dx * y
-        except:
-            # In case of uncertainty, we output False.  
-            # This means that the integral can be calculated incorrectly.
-            flag = False'''
     return S, flag[0]
 
-
-
-
+def draw_text(surf: game.Surface, text: str, size: int, x: int, y: int, color: (int, int, int)):
+    """Draw text on surface surf.
+surf - surface for drawning,
+text - text for drawning,
+size - font size,
+x, y - position of drawning,
+color - RGB-color."""
+    font = game.font.Font(None, size)
+    text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect()
+    text_rect.topleft = (x, y)
+    surf.blit(text_surface, text_rect)
     
 #Globals for onStart function:
 c_info_pic = None
@@ -768,13 +631,14 @@ samp = None
 maxdy = None
 show_function = None
 show_integral = None
+int_mode = None
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 
 def onStart():
     """Start function."""
-    global f_str, f, c, x1, x2, samp, show_function, show_integral, c_info_pic, c_info, w_arrow_pic, w_arrow, info_show
+    global f_str, f, c, x1, x2, samp, show_function, show_integral, int_mode, c_info_pic, c_info, w_arrow_pic, w_arrow, info_show
     f_str = prompt(text = 'Enter the function:',
                    title = 'Function',
                    default='sin(x)')
@@ -790,6 +654,7 @@ def onStart():
     samp = 0.5
     show_function = True
     show_integral = True
+    int_mode = 2
     w, h = picture['control info'].get_size()
     c_info_pic = transform.scale(picture['control info'], (w * 2, h * 2))
     c_info = Sprite(c_info_pic, (0, 0))
@@ -874,6 +739,15 @@ if __name__ == '__main__':
                         w_arrow.rect.top = c_info.rect.bottom
                         w_arrow.img(w_arrow_pic)
                     info_show = not info_show
+
+                elif event.key in [game.K_KP_1, game.K_KP1, game.K_1]:
+                    int_mode = 1
+
+                elif event.key in [game.K_KP_2, game.K_KP2, game.K_2]:
+                    int_mode = 2
+
+                elif event.key in [game.K_KP_3, game.K_KP3, game.K_3]:
+                    int_mode = 3
             #Mouse wheel:
             if event.type == game.MOUSEWHEEL:
                 if event.y == 1:
@@ -945,44 +819,51 @@ if __name__ == '__main__':
         list(map(lambda i: i.delete(),
                  all_lines.sprites() +
                  all_rects.sprites() +
-                 all_texts.sprites()))
-        '''for i in all_lines.sprites():
-            i.delete()
-        for i in all_rects.sprites():
-            i.delete()'''
+                 all_trapezoids.sprites() +
+                 all_curve_trapezoids.sprites()))
 
         #Redraw objects:
         if show_function:
             draw_function(func = f,
                           cuts = c)
         if show_integral:
-            #draw_integral_rects(func = f,
-            #                    start = x1,
-            #                    end = x2,
-            #                    cuts = c,
-            #                    sample = samp)
-            
-            #draw_integral_trapezoid(func = f,
-            #                        start = x1,
-            #                        end = x2,
-            #                        cuts = c
-            #                    )
-            draw_integral_curve_trapezoid(func = f,
+            if int_mode == 1:
+                draw_integral_rects(func = f,
                                     start = x1,
                                     end = x2,
-                                    sample = 0.5,
-                                    cuts = c
-                                )
+                                    cuts = c,
+                                    sample = samp)
+            elif int_mode == 2:
+                draw_integral_trapezoid(func = f,
+                                        start = x1,
+                                        end = x2,
+                                        cuts = c)
+            elif int_mode == 3:
+                draw_integral_curve_trapezoid(func = f,
+                                        start = x1,
+                                        end = x2,
+                                        cuts = c)
 
         draw_axes()
 
         #Integral value:
         if result is None :
-            result = integral_calculate_rect(func = f,
-                                             start = x1,
-                                             end = x2,
-                                             cuts = c,
-                                             sample = samp)
+            if int_mode == 1:
+                result = integral_calculate_rect(func = f,
+                                                 start = x1,
+                                                 end = x2,
+                                                 cuts = c,
+                                                 sample = samp)
+            elif int_mode == 2:
+                result = integral_calculate_trapezoid(func = f,
+                                                      start = x1,
+                                                      end = x2,
+                                                      cuts = c)
+            elif int_mode == 3:
+                result = integral_calculate_curve_trapezoid(func = f,
+                                                            start = x1,
+                                                            end = x2,
+                                                            cuts = c)
 
         #Draw all:
         AllUpdate(screen, all_sprites, (0, 0, 0), flip = False)
